@@ -1,0 +1,374 @@
+# openAccess
+
+**The first truly free coding assistant.**
+
+No GPU.
+No local LLM hosting.
+No API keys.
+No monthly inference bills.
+
+openAccess acts as a bridge between your local machine and the ChatGPT web interface, allowing ChatGPT to interact with and execute commands on your system through an automated feedback loop.
+
+In short:
+
+> openAccess borrows intelligence from ChatGPT and gives it controlled access to your local system.
+
+---
+
+# Why openAccess?
+
+Most AI coding assistants require one or more of the following:
+
+* Expensive API keys
+* Self-hosted LLMs
+* Powerful GPUs
+* Complex infrastructure
+
+openAccess requires none of them.
+
+If you can access ChatGPT through your browser, you can use openAccess.
+
+---
+
+# Features
+
+* Completely free to run
+* No API key required
+* No local LLM hosting
+* Works with your existing ChatGPT account
+* Autonomous task execution
+* Continuous feedback loop
+* Supports multi-step coding and automation tasks
+* Simple installation and setup
+
+---
+
+# How It Works
+
+openAccess creates a feedback loop between:
+
+1. Your local machine
+2. ChatGPT Web UI
+3. The command execution environment
+
+The workflow looks like this:
+
+```text
+User Goal
+    │
+    ▼
+openAccess
+    │
+    ▼
+ChatGPT Web UI
+    │
+    ▼
+Generates Bash Command
+    │
+    ▼
+Local Execution
+    │
+    ▼
+Execution Logs
+    │
+    ▼
+ChatGPT Web UI
+    │
+    ▼
+Next Command
+    │
+    ▼
+...
+```
+
+The cycle continues until the task is completed.
+
+When ChatGPT determines that the objective has been achieved, it outputs:
+
+```text
+END-OF-OPERATION
+```
+
+openAccess detects this token and terminates the execution loop.
+
+---
+
+# Installation
+
+## Clone Repository
+
+```bash
+git clone <repo-url>
+cd openAccess
+```
+
+## Install Requirements
+
+```bash
+pip install -r requirements.txt
+```
+
+That's it.
+
+No additional setup.
+No model downloads.
+No API configuration.
+
+---
+
+# Usage
+
+## Step 1: Start openAccess
+
+```bash
+python3 webHarness.py
+```
+
+This launches ChatGPT in your browser.
+
+---
+
+## Step 2: Login
+
+If this is your first run:
+
+* Login to ChatGPT using your account.
+* Google login, email login, etc. are all supported through the normal ChatGPT website.
+
+openAccess does not manage credentials.
+
+Authentication happens entirely through ChatGPT's official website.
+
+---
+
+## Step 3: Select a Chat Session
+
+You have two options:
+
+### Continue Existing Session
+
+1. Open one of your previous conversations in ChatGPT.
+2. Return to the terminal.
+3. Press Enter.
+
+openAccess will use the currently selected chat.
+
+### Start Fresh
+
+1. Do not select any previous conversation.
+2. Return to the terminal.
+3. Press Enter.
+
+A new conversation will be used.
+
+---
+
+## Step 4: Enter Your Goal
+
+Example:
+
+```text
+Build a retro 2D Snake and Ladder game in Python.
+```
+
+Press Enter.
+
+openAccess will begin execution.
+
+---
+
+# Execution Loop
+
+For every iteration:
+
+### 1. Send Prompt
+
+openAccess sends:
+
+* System Prompt
+* User Goal
+* Current execution context
+
+to ChatGPT Web UI.
+
+---
+
+### 2. Generate Command
+
+ChatGPT responds with a Bash command.
+
+Example:
+
+```bash
+ls -la
+```
+
+or
+
+```bash
+pip install -r requirements.txt
+```
+
+or
+
+```bash
+pytest
+```
+
+---
+
+### 3. Execute Command
+
+The command is executed locally.
+
+Example:
+
+```bash
+pytest
+```
+
+Output:
+
+```text
+3 tests failed
+```
+
+---
+
+### 4. Return Logs
+
+Execution logs are sent back to ChatGPT.
+
+---
+
+### 5. Plan Next Step
+
+ChatGPT analyzes:
+
+* Previous command
+* Execution output
+* Current project state
+
+and generates the next command.
+
+---
+
+### 6. Repeat
+
+The loop continues until:
+
+```text
+END-OF-OPERATION
+```
+
+is generated.
+
+---
+
+
+---
+
+# Architecture
+
+```text
+┌─────────────────────┐
+│     User Goal       │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│    openAccess       │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  ChatGPT Web UI     │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Generated Command   │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Local Execution     │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Execution Logs      │
+└──────────┬──────────┘
+           │
+           ▼
+      Back to GPT
+```
+
+---
+
+# Requirements
+
+* Internet connection
+* ChatGPT account
+
+---
+
+# Notes
+
+* openAccess uses Playwright to automate interactions with ChatGPT.
+* Commands are executed on your local machine.
+* The quality of results depends on the capabilities of the selected ChatGPT model.
+* Existing chat sessions can be reused to preserve context across runs.
+
+---
+
+# Troubleshooting
+
+## ChatGPT does not output commands
+
+Prompt ChatGPT in the web UI:
+
+```text
+Output only executable bash commands.
+Do not include explanations.
+```
+
+Then restart the task.
+
+---
+
+## Command execution fails
+
+openAccess automatically forwards:
+
+* stdout
+* stderr
+* exit codes
+
+back to ChatGPT so it can attempt recovery.
+
+---
+
+# Security Warning
+
+openAccess executes commands generated by an AI model on your local machine.
+
+Use it only in environments you trust.
+
+Always review commands before enabling unattended execution.
+
+The project authors are not responsible for any data loss, system modifications, or unintended actions resulting from generated commands.
+
+---
+
+# Disclaimer
+
+openAccess is an experimental project intended for research, automation, and developer productivity workflows.
+
+Use at your own risk.
+
+---
+
+# License
+
+MIT License
