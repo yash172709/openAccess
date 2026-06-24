@@ -166,13 +166,5 @@ with Camoufox(
         wait_for_chatgpt_response(page)
         generated_code = page.locator("pre code").last.inner_text()
 
-        
-    # with open(
-    #     "generated_script.py",
-    #     "w",
-    #     encoding="utf-8"
-    # ) as f:
-    #     f.write(generated_code)
-
     print("End-of-operation")
     input("Press Enter to close browser...")
