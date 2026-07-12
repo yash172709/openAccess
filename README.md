@@ -168,7 +168,7 @@ A new conversation will be used.
 Example:
 
 ```text
-Build a retro 2D Snake and Ladder game in Python.
+Create a 2D retro-style shooting game in Python where enemies continuously fall from the top of the screen, and the player controls a spaceship at the bottom that can move horizontally and shoot the falling objects. Include collision detection, score tracking, increasing difficulty over time, and a game-over condition when an enemy reaches the bottom or collides with the player.
 ```
 
 Press Enter.
