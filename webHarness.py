@@ -27,17 +27,55 @@ def exec(command):
     else:
         return stdout
     
-def sys2web(page, prompt):
+def sys2web(page, prompt, generated_code):
     page.locator("#prompt-textarea").click()
 
     page.evaluate("""
     (text) => navigator.clipboard.writeText(text)
-    """, "exec() function call output: " + prompt)
+    """, "exec() function call. Input: " + generated_code + " Output: " + prompt)
 
     page.keyboard.press("Control+V")   # Windows/Linux
     # page.keyboard.press("Meta+V")    # macOS
 
     page.keyboard.press("Enter")
+
+def checkBash(page):
+    page.locator("#prompt-textarea").click()
+
+    page.evaluate("""
+    (text) => navigator.clipboard.writeText(text)
+    """, "Bash script verification: Is the above generation a bash Script? If yes, then output a bash command TRUE else FALSE in 'Terminal-style code viewer' only. Note: flag case-sensitive. True, true, false, etc won't work. It have to be TRUE or FALSE.")
+
+    page.keyboard.press("Control+V")   # Windows/Linux
+    # page.keyboard.press("Meta+V")    # macOS
+
+    page.keyboard.press("Enter")
+    wait_for_chatgpt_response(page)
+
+    flag = page.locator("pre code").last.inner_text()
+    if "TRUE" in flag:
+        return True
+    else:
+        return False
+
+def forceBash(page, system_type):
+    page.locator("#prompt-textarea").click()
+
+    page.evaluate("""
+    (text) => navigator.clipboard.writeText(text)
+    """, "Bash script Request: Generate bash command for above requirement/request/task.")
+
+
+    if system_type == "windows" or system_type == "linux":
+        page.keyboard.press("Control+V")   # Windows/Linux
+    elif system_type == "mac":
+        page.keyboard.press("Meta+V")    # macOS
+
+    page.keyboard.press("Enter")
+    wait_for_chatgpt_response(page)
+
+    regenerate = page.locator("pre code").last.inner_text()
+    return regenerate
 
 
 def wait_for_chatgpt_response(
@@ -112,59 +150,93 @@ def wait_for_chatgpt_response(
 
         time.sleep(1)
 
-with open("SystemPrompt.md", "r", encoding="utf-8") as file:
-    content = file.read()
+def main():
 
-with open("Skills/SKILL.md", "r", encoding="utf-8") as file:
-    skill = file.read()
+    with open("SystemPrompt.md", "r", encoding="utf-8") as file:
+        content = file.read()
 
-with Camoufox(
-    headless=False,
-    humanize=True,
-    persistent_context=True,
-    user_data_dir=PROFILE_DIR
-) as browser:
+    with open("Skills/SKILL.md", "r", encoding="utf-8") as file:
+        skill = file.read()
 
-    page = browser.new_page()
+    with Camoufox(
+        headless=False,
+        humanize=True,
+        persistent_context=True,
+        user_data_dir=PROFILE_DIR
+    ) as browser:
+        
+        while True:       
+            system_type = input("what's your system, windows/linux/mac (case-sensitive): ")
+            if system_type == "windows" or system_type == "linux" or system_type == "mac":
+                break
+            else:
+                print("System type must be windows/linux/mac")
+        pages = browser.pages
 
-    page.goto(
-        "https://chatgpt.com/",
-        wait_until="domcontentloaded",
-        timeout=60000
-    )
+        if pages:
+            page = pages[0]          # Reuse the existing tab
+        else:
+            page = browser.new_page()  # Only create one if none exist
 
-    editor = page.get_by_role(
-        "textbox",
-        name="Chat with ChatGPT"
-    )
+        page.goto(
+            "https://chatgpt.com/",
+            wait_until="domcontentloaded",
+            timeout=60000
+        )
 
-    editor.wait_for(
-        state="visible",
-        timeout=120000
-    )
+        editor = page.get_by_role(
+            "textbox",
+            name="Chat with ChatGPT"
+        )
 
-    input("select the session")
-    user_input = input("How can I help you? ")
+        editor.wait_for(
+            state="visible",
+            timeout=120000
+        )
 
-    page.locator("#prompt-textarea").click()
+        input("select the session in ChatGPT Web-UI then press Enter ")
+        user_input = input("How can I help you? ")
 
-    page.evaluate("""
-    (text) => navigator.clipboard.writeText(text)
-    """, "System-Prompt:" + content + " User Task: " + user_input)
+        page.locator("#prompt-textarea").click()
 
-    page.keyboard.press("Control+V")   # Windows/Linux
-    # page.keyboard.press("Meta+V")    # macOS
+        page.evaluate("""
+        (text) => navigator.clipboard.writeText(text)
+        """, "System-Prompt:" + content + " User Task: " + user_input)
 
-    page.keyboard.press("Enter")
-    wait_for_chatgpt_response(page)
+        if system_type == "windows" or system_type == "linux":
+            page.keyboard.press("Control+V")   # Windows/Linux
+        elif system_type == "mac":
+            page.keyboard.press("Meta+V")    # macOS
 
-    generated_code = page.locator("pre code").last.inner_text()
 
-
-    while generated_code != "END-OF-OPERATION":
-        sys2web(page,exec(generated_code))
+        page.keyboard.press("Enter")
         wait_for_chatgpt_response(page)
+
         generated_code = page.locator("pre code").last.inner_text()
 
-    print("End-of-operation")
-    input("Press Enter to close browser...")
+        while True:
+            bashflag = checkBash(page)
+            print(bashflag)
+            if bashflag:
+                break
+            else:
+                generated_code = forceBash(page, system_type)
+
+
+        while "END-OF-OPERATION" not in generated_code:
+            sys2web(page,exec(generated_code), generated_code)
+            wait_for_chatgpt_response(page)
+            generated_code = page.locator("pre code").last.inner_text()
+            while True:
+                bashflag = checkBash(page)
+                if bashflag:
+                    break
+                else:
+                    generated_code = forceBash(page, system_type)
+
+
+        print("End-of-operation")
+        input("Press Enter to close browser...")
+
+if __name__ == "__main__":
+    main()
